@@ -20,6 +20,7 @@ app.use(
     origin: (origin) => {
       if (!origin) return null;
       if (/^https:\/\/[a-z0-9-]+\.pages\.dev$/i.test(origin)) return origin;
+      if (/^https:\/\/[a-z0-9-]+\.workers\.dev$/i.test(origin)) return origin;
       if (/^https?:\/\/localhost(:\d+)?$/i.test(origin)) return origin;
       if (/^https?:\/\/127\.0\.0\.1(:\d+)?$/i.test(origin)) return origin;
       return null;
