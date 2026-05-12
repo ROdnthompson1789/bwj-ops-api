@@ -7,6 +7,7 @@ import {
   isPlatformId,
   resolveTenantId,
   type DailySnapshotRow,
+  type LatestFollowersRow,
   type PlatformId,
   type RollupRow,
   type TenantConfig,
@@ -52,7 +53,7 @@ app.get("/watchman/config", async (c) => {
 app.get("/watchman/snapshot/today", async (c) => {
   const tenantId = resolveTenantId(c);
 
-  const [todayRes, rollupRes] = await c.env.DB.batch<unknown>([
+  const [todayRes, rollupRes, followersRes] = await c.env.DB.batch<unknown>([
     c.env.DB.prepare(
       `SELECT * FROM daily_snapshots
        WHERE tenant_id = ? AND snapshot_date = date('now')`,
@@ -68,13 +69,27 @@ app.get("/watchman/snapshot/today", async (c) => {
        WHERE tenant_id = ? AND snapshot_date >= date('now', '-27 days')
        GROUP BY platform`,
     ).bind(tenantId),
+    c.env.DB.prepare(
+      `SELECT ds.platform, ds.followers
+       FROM daily_snapshots ds
+       JOIN (
+         SELECT platform, MAX(snapshot_date) AS max_date
+         FROM daily_snapshots
+         WHERE tenant_id = ? AND followers IS NOT NULL
+         GROUP BY platform
+       ) latest ON ds.platform = latest.platform AND ds.snapshot_date = latest.max_date
+       WHERE ds.tenant_id = ? AND ds.followers IS NOT NULL
+       GROUP BY ds.platform`,
+    ).bind(tenantId, tenantId),
   ]);
 
   const todayRows = (todayRes.results ?? []) as DailySnapshotRow[];
   const rollupRows = (rollupRes.results ?? []) as RollupRow[];
+  const followerRows = (followersRes.results ?? []) as LatestFollowersRow[];
 
   const byPlatformToday = new Map(todayRows.map((r) => [r.platform, r]));
   const byPlatformRollup = new Map(rollupRows.map((r) => [r.platform, r]));
+  const byPlatformFollowers = new Map(followerRows.map((r) => [r.platform, r.followers]));
 
   const platforms = PLATFORM_IDS.map((id) => {
     const rollup = byPlatformRollup.get(id);
@@ -85,6 +100,7 @@ app.get("/watchman/snapshot/today", async (c) => {
       views_28d: rollup?.views_28d ?? 0,
       new_followers_7d: rollup?.new_followers_7d ?? 0,
       new_followers_28d: rollup?.new_followers_28d ?? 0,
+      followers: byPlatformFollowers.get(id) ?? null,
     };
   });
 

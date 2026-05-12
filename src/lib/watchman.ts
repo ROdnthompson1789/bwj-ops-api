@@ -79,5 +79,10 @@ export interface RollupRow {
   new_followers_28d: number;
 }
 
+export interface LatestFollowersRow {
+  platform: string;
+  followers: number;
+}
+
 export const resolveTenantId = (c: Context<{ Bindings: Bindings }>): string =>
   c.env.TENANT_ID;
