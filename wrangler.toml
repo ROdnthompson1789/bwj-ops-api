@@ -1,0 +1,29 @@
+name = "bwj-ops-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-09"
+account_id = "478d4f929a37c81b28137efc8ed261dc"
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bwj-ops-db"
+database_id = "ac16cc58-32f2-4066-bc65-e499e317db6f"
+
+[[kv_namespaces]]
+binding = "SECRETS"
+id = "bc0bebb969fa47cfaeeeda85a8c0997d"
+
+[vars]
+ENVIRONMENT = "production"
+WORKER_VERSION = "0.1.0"
+TENANT_ID = "bwj"
+
+[triggers]
+crons = [
+  "0 11 * * *",    # 11:00 UTC daily -- YouTube pull (Step 1.4).
+  "15 11 * * *",   # 11:15 UTC daily -- threshold evaluation (Step 3.2).
+  "0 * * * *",     # hourly -- affiliate brand sentinel-stall checker (Step 3.3).
+  "0 12 * * *",    # 12:00 UTC daily -- milestone & quarter-close (Step 3.4).
+]

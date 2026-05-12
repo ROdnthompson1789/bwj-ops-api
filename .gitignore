@@ -1,0 +1,13 @@
+node_modules/
+.wrangler/
+.dev.vars
+.env
+.env.local
+dist/
+
+# Sensitive operational artifacts kept out of source history.
+outreach_signature.txt
+voice_reference.json
+
+# Diagnostic byproducts.
+scripts/diag-output.txt
