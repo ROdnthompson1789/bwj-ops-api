@@ -305,8 +305,7 @@ try {
 
     Test-Endpoint -Name "video-pull/run: manual trigger returns VideoPullResult shape" -Method POST -Path "/scheduled/video-pull/run" -ExpectedStatus 200 -Validate {
         param($r)
-        if (-not $r.PSObject.Properties["window_start"]) { return "missing window_start" }
-        if (-not $r.PSObject.Properties["window_end"]) { return "missing window_end" }
+        if (-not $r.PSObject.Properties["snapshot_date"]) { return "missing snapshot_date" }
         if (-not ($r.platforms -is [array])) { return "platforms not array" }
         $true
     } | Out-Null
