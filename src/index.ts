@@ -13,6 +13,7 @@ import { runSentinelStallCheck } from "./scheduled/sentinel-stall";
 import { runMilestoneCheck } from "./scheduled/milestone";
 import { runSocialPull } from "./scheduled/social-pull";
 import { runTikTokPull } from "./scheduled/tiktok-pull";
+import { runVideoPull } from "./scheduled/video-pull";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -130,6 +131,13 @@ export default {
           runTikTokPull(env).catch((err) =>
             console.error("cron_tiktok_failed", err),
           ),
+        );
+        break;
+      case "20 11 * * *":
+        ctx.waitUntil(
+          runVideoPull(env)
+            .then((r) => console.log("cron_video_pull_ok", JSON.stringify(r)))
+            .catch((err) => console.error("cron_video_pull_failed", err)),
         );
         break;
       default:

@@ -26,6 +26,7 @@ crons = [
   "15 11 * * *",   # 11:15 UTC daily -- threshold evaluation (Step 3.2).
   "0 * * * *",     # hourly -- affiliate brand sentinel-stall checker (Step 3.3).
   "0 12 * * *",    # 12:00 UTC daily -- milestone & quarter-close (Step 3.4).
+  "20 11 * * *",   # 11:20 UTC daily -- per-video YouTube Analytics pull (Phase 2 Step 2.2).
   "30 11 * * *",   # 11:30 UTC daily -- Facebook/Instagram pull (Item 8, activates after Meta approval).
   "45 11 * * *",   # 11:45 UTC daily -- TikTok pull (Item 9, activates after TikTok approval).
 ]

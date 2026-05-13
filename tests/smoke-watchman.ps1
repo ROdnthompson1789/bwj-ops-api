@@ -153,10 +153,9 @@ try {
         foreach ($id in $expectedIds) {
             if (-not $seen.ContainsKey($id)) { return "missing platform: $id" }
         }
-        # With no data yet, today should be null per platform and rollups should be 0
         foreach ($p in $r.platforms) {
-            if ($null -ne $p.today) { return "expected today=null for $($p.platform) before sync, got non-null" }
-            if ($p.views_7d -ne 0 -or $p.views_28d -ne 0) { return "expected 0 rollups for $($p.platform), got 7d=$($p.views_7d) 28d=$($p.views_28d)" }
+            if ($null -eq $p.PSObject.Properties["views_7d"]) { return "missing views_7d on $($p.platform)" }
+            if ($null -eq $p.PSObject.Properties["views_28d"]) { return "missing views_28d on $($p.platform)" }
         }
         $true
     } | Out-Null
@@ -164,10 +163,11 @@ try {
     Write-Host ""
     Write-Host "=== GET /watchman/snapshots/:platform ===" -ForegroundColor Cyan
 
-    Test-Endpoint -Name "snapshots/tiktok: happy path empty" -Method GET -Path "/watchman/snapshots/tiktok" -ExpectedStatus 200 -Validate {
+    Test-Endpoint -Name "snapshots/tiktok: happy path shape" -Method GET -Path "/watchman/snapshots/tiktok" -ExpectedStatus 200 -Validate {
         param($r)
         if ($r.platform -ne "tiktok") { return "platform mismatch" }
-        if ($r.count -ne 0) { return "expected count=0 pre-sync, got $($r.count)" }
+        if ($null -eq $r.PSObject.Properties["count"]) { return "missing count field" }
+        if (-not ($r.snapshots -is [array])) { return "snapshots not array" }
         $true
     } | Out-Null
 
@@ -187,8 +187,8 @@ try {
         param($r); if ($r.error -ne "from_after_to") { return "expected from_after_to, got $($r.error)" }; $true
     } | Out-Null
 
-    Test-Endpoint -Name "snapshots: valid range count=0" -Method GET -Path "/watchman/snapshots/tiktok?from=2026-05-01&to=2026-05-11" -ExpectedStatus 200 -Validate {
-        param($r); if ($r.count -ne 0) { return "expected 0, got $($r.count)" }; $true
+    Test-Endpoint -Name "snapshots: valid range, returns array" -Method GET -Path "/watchman/snapshots/tiktok?from=2026-05-01&to=2026-05-11" -ExpectedStatus 200 -Validate {
+        param($r); if (-not ($r.snapshots -is [array])) { return "snapshots not array" }; $true
     } | Out-Null
 
     Write-Host ""
@@ -294,6 +294,21 @@ try {
 
     Test-Endpoint -Name "constellation/video: missing video -> 404" -Method GET -Path "/watchman/constellation/video/__nope__" -ExpectedStatus 404 -Validate {
         param($r); if ($r.error -ne "video_not_found") { return "expected video_not_found, got $($r.error)" }; $true
+    } | Out-Null
+
+    Test-Endpoint -Name "constellation/channel: has video nodes from seed data" -Method GET -Path "/watchman/constellation/channel" -ExpectedStatus 200 -Validate {
+        param($r)
+        $videoNodes = @($r.nodes | Where-Object { $_.type -eq "video" })
+        if ($videoNodes.Count -lt 5) { return "expected >=5 video nodes from seed data, got $($videoNodes.Count)" }
+        $true
+    } | Out-Null
+
+    Test-Endpoint -Name "video-pull/run: manual trigger returns VideoPullResult shape" -Method POST -Path "/scheduled/video-pull/run" -ExpectedStatus 200 -Validate {
+        param($r)
+        if (-not $r.PSObject.Properties["window_start"]) { return "missing window_start" }
+        if (-not $r.PSObject.Properties["window_end"]) { return "missing window_end" }
+        if (-not ($r.platforms -is [array])) { return "platforms not array" }
+        $true
     } | Out-Null
 
     Test-Endpoint -Name "chart/master: default days=14, continuous series" -Method GET -Path "/watchman/chart/master" -ExpectedStatus 200 -Validate {

@@ -3,6 +3,7 @@ import type { Bindings } from "../lib/types";
 import { requireAuth } from "../lib/auth";
 import { runStallCheck } from "../scheduled/stall-check";
 import { runYouTubePull } from "../lib/cron-youtube";
+import { runVideoPull } from "../scheduled/video-pull";
 
 const app = new Hono<{ Bindings: Bindings }>();
 app.use("*", requireAuth);
@@ -14,6 +15,11 @@ app.post("/scheduled/stall-check/run", async (c) => {
 
 app.post("/scheduled/youtube-pull/run", async (c) => {
   const result = await runYouTubePull(c.env);
+  return c.json(result);
+});
+
+app.post("/scheduled/video-pull/run", async (c) => {
+  const result = await runVideoPull(c.env);
   return c.json(result);
 });
 
