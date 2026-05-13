@@ -11,6 +11,8 @@ import { runYouTubePull } from "./lib/cron-youtube";
 import { runThresholdEval } from "./scheduled/threshold-eval";
 import { runSentinelStallCheck } from "./scheduled/sentinel-stall";
 import { runMilestoneCheck } from "./scheduled/milestone";
+import { runSocialPull } from "./scheduled/social-pull";
+import { runTikTokPull } from "./scheduled/tiktok-pull";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -114,6 +116,20 @@ export default {
           runMilestoneCheck(env)
             .then((r) => console.log("cron_milestone_ok", JSON.stringify(r)))
             .catch((err) => console.error("cron_milestone_failed", err)),
+        );
+        break;
+      case "30 11 * * *":
+        ctx.waitUntil(
+          runSocialPull(env).catch((err) =>
+            console.error("cron_social_failed", err),
+          ),
+        );
+        break;
+      case "45 11 * * *":
+        ctx.waitUntil(
+          runTikTokPull(env).catch((err) =>
+            console.error("cron_tiktok_failed", err),
+          ),
         );
         break;
       default:
