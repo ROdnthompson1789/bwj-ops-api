@@ -7,6 +7,7 @@ import outreachRoutes from "./routes/outreach";
 import alertsRoutes from "./routes/alerts";
 import scheduledRoutes from "./routes/scheduled";
 import watchmanRoutes from "./routes/watchman";
+import { dashboardRoutes } from "./routes/dashboard";
 import { runYouTubePull } from "./lib/cron-youtube";
 import { runThresholdEval } from "./scheduled/threshold-eval";
 import { runSentinelStallCheck } from "./scheduled/sentinel-stall";
@@ -80,6 +81,7 @@ app.route("/", outreachRoutes);
 app.route("/", alertsRoutes);
 app.route("/", scheduledRoutes);
 app.route("/", watchmanRoutes);
+app.route("/dashboard", dashboardRoutes);
 
 app.notFound((c) => c.json({ error: "not_found", path: c.req.path }, 404));
 app.onError((err, c) => {
