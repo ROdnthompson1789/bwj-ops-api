@@ -9,7 +9,7 @@ const VALID_DATA_KEYS = new Set(["fieldlog", "shotplan", "tripdata", "checklist"
 
 // GET /dashboard/config
 app.get("/config", async (c) => {
-  const [season, vara, varb, ceiling, updated, driveurl, apiKeyExists] =
+  const [season, vara, varb, ceiling, updated, driveurl, apiKeyExists, ytkey] =
     await Promise.all([
       c.env.SECRETS.get("dashboard_traj_season"),
       c.env.SECRETS.get("dashboard_traj_vara"),
@@ -18,6 +18,7 @@ app.get("/config", async (c) => {
       c.env.SECRETS.get("dashboard_traj_updated"),
       c.env.SECRETS.get("dashboard_driveurl"),
       c.env.SECRETS.get("anthropic_api_key"),
+      c.env.SECRETS.get("dashboard_ytkey"),
     ]);
 
   return c.json({
@@ -27,6 +28,7 @@ app.get("/config", async (c) => {
     traj_ceiling: ceiling,
     traj_updated: updated,
     driveurl: driveurl,
+    ytkey: ytkey,
     apikey_configured: Boolean(apiKeyExists),
   });
 });
@@ -49,6 +51,7 @@ app.post("/config", async (c) => {
     traj_ceiling: "dashboard_traj_ceiling",
     traj_updated: "dashboard_traj_updated",
     driveurl: "dashboard_driveurl",
+    ytkey: "dashboard_ytkey",
   };
 
   for (const [bodyKey, kvKey] of Object.entries(fieldMap)) {
